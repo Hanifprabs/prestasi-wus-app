@@ -245,13 +245,20 @@ ID Pasien Anda: <strong style='color:#0f172a;'>{id_aktif}</strong>
                         no_antrean_terstruktur = f"{kode_faskes}-S{kode_sesi}-{jumlah_orang_sesi_ini + 1:03d}" 
 
                         if status_terakhir == 'Selesai Diperiksa':
+                            # Ambil data profil (email, no_hp, alamat_kecamatan) dari pendaftaran asli pasien ini
+                            cursor.execute("SELECT email, no_hp, alamat_kecamatan FROM pasien_tb WHERE id_pasien = %s ORDER BY id_rekam ASC LIMIT 1", (id_aktif,))
+                            row_profile = cursor.fetchone()
+                            email_pasien = row_profile[0] if row_profile and row_profile[0] else None
+                            hp_pasien = row_profile[1] if row_profile and row_profile[1] else None
+                            kec_pasien = row_profile[2] if row_profile and row_profile[2] else None
+
                             cursor.execute("""
                                 INSERT INTO pasien_tb (
-                                    id_pasien, nama, usia, pendapatan_bulanan, akses_air_bersih, 
+                                    id_pasien, nama, email, no_hp, alamat_kecamatan, usia, pendapatan_bulanan, akses_air_bersih, 
                                     akses_layanan_kesehatan, pendidikan_terakhir, skor_pengetahuan_gizi,
                                     lokasi_faskes, jadwal_kunjungan, no_antrean, status_pemeriksaan, tanggal_pengisian
-                                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 'Menunggu Pemeriksaan Fisik', %s)
-                            """, (id_aktif, nama_user, usia, l_pendapatan, air_bersih, akses_faskes, l_pendidikan, skor_gizi, lokasi_puskesmas, jadwal_lengkap, no_antrean_terstruktur, waktu_pengisian_sekarang))
+                                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 'Menunggu Pemeriksaan Fisik', %s)
+                            """, (id_aktif, nama_user, email_pasien, hp_pasien, kec_pasien, usia, l_pendapatan, air_bersih, akses_faskes, l_pendidikan, skor_gizi, lokasi_puskesmas, jadwal_lengkap, no_antrean_terstruktur, waktu_pengisian_sekarang))
                         else:
                             cursor.execute("""
                                 UPDATE pasien_tb 

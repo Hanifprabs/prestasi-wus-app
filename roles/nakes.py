@@ -558,7 +558,8 @@ def show_nakes_history_dashboard():
         alamat_val = row.get('alamat', '')
         alamat_str = str(alamat_val) if pd.notna(alamat_val) and str(alamat_val).strip() not in ['', 'nan', 'None', '-'] else ''
         
-        kec_val = str(row.get('alamat_kecamatan', '-')).title()
+        raw_kec = row.get('alamat_kecamatan')
+        kec_val = str(raw_kec).strip().title() if pd.notna(raw_kec) and str(raw_kec).strip().lower() not in ['', 'none', 'nan', '-'] else '-'
         
         if alamat_str and kec_val != "-":
             alamat_display = f"{alamat_str}<br><span style='color: #94a3b8; font-size: 0.7rem;'>Kec. {kec_val}</span>"

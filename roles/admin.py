@@ -587,7 +587,8 @@ def show_admin_database_menu():
                 nama = row.get('nama', '-')
                 email = row.get('email', '-')
                 wa = row.get('no_hp', '-')
-                kec = row.get('alamat_kecamatan', '-')
+                raw_kec = row.get('alamat_kecamatan')
+                kec = str(raw_kec).strip().title() if pd.notna(raw_kec) and str(raw_kec).strip().lower() not in ['', 'none', 'nan', '-'] else '-'
                 
                 # --- AUTO-DETECT & FALLBACK TANGGAL DAFTAR ---
                 tgl_daftar = "-"
@@ -672,7 +673,8 @@ def show_admin_database_menu():
                 else:
                     antrean = f"Q-{int(float(antrean_db)):02d}" if str(antrean_db).replace('.','',1).isdigit() else str(antrean_db)
                 
-                kec_val = str(row.get('alamat_kecamatan', '-')).title()
+                raw_kec = row.get('alamat_kecamatan')
+                kec_val = str(raw_kec).strip().title() if pd.notna(raw_kec) and str(raw_kec).strip().lower() not in ['', 'none', 'nan', '-'] else '-'
                 faskes_str = f"Puskesmas {kec_val}" if kec_val != "-" else "Puskesmas Pusat"
                 
                 jadwal_raw = str(row.get('jadwal_kunjungan', row.get('Jadwal_Kunjungan', '-'))).strip()
