@@ -4,3 +4,4 @@ psycopg2-binary
 plotly
 scikit-learn
 imbalanced-learn
+matplotlib
