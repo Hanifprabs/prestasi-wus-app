@@ -672,39 +672,39 @@ else:
     # 3. NAVIGASI TOMBOL KOTAK BERDASARKAN HIERARKI AKSES
     if role_user == "Pasien":
         b1 = st.sidebar.button("📊 Dashboard", type="primary" if st.session_state['menu_internal_active'] == 'Dashboard' else "secondary", use_container_width=True)
-        if b1: st.session_state['menu_internal_active'] = "Dashboard"
+        if b1: st.session_state['menu_internal_active'] = "Dashboard"; st.rerun()
         
         b2 = st.sidebar.button("📋 Layanan Utama", type="primary" if st.session_state['menu_internal_active'] == 'Layanan Utama' else "secondary", use_container_width=True)
-        if b2: st.session_state['menu_internal_active'] = "Layanan Utama"
+        if b2: st.session_state['menu_internal_active'] = "Layanan Utama"; st.rerun()
         
         b3 = st.sidebar.button("🩺 Riwayat Medis", type="primary" if st.session_state['menu_internal_active'] == 'Riwayat Medis' else "secondary", use_container_width=True)
-        if b3: st.session_state['menu_internal_active'] = "Riwayat Medis"
+        if b3: st.session_state['menu_internal_active'] = "Riwayat Medis"; st.rerun()
 
         b4 = st.sidebar.button("👤 Profil Saya", type="primary" if st.session_state['menu_internal_active'] == 'Profil Saya' else "secondary", use_container_width=True)
-        if b4: st.session_state['menu_internal_active'] = "Profil Saya"
+        if b4: st.session_state['menu_internal_active'] = "Profil Saya"; st.rerun()
 
     elif role_user == "Admin":
         b1 = st.sidebar.button("📊 Dashboard", type="primary" if st.session_state['menu_internal_active'] == 'Dashboard' else "secondary", use_container_width=True)
-        if b1: st.session_state['menu_internal_active'] = "Dashboard"
+        if b1: st.session_state['menu_internal_active'] = "Dashboard"; st.rerun()
 
         b2 = st.sidebar.button("📈 Evaluasi Model AI", type="primary" if st.session_state['menu_internal_active'] == 'Evaluasi Model AI' else "secondary", use_container_width=True)
-        if b2: st.session_state['menu_internal_active'] = "Evaluasi Model AI"
+        if b2: st.session_state['menu_internal_active'] = "Evaluasi Model AI"; st.rerun()
         
         b3 = st.sidebar.button("⚙️ Retraining Model AI", type="primary" if st.session_state['menu_internal_active'] == 'Retraining Model AI' else "secondary", use_container_width=True)
-        if b3: st.session_state['menu_internal_active'] = "Retraining Model AI"
+        if b3: st.session_state['menu_internal_active'] = "Retraining Model AI"; st.rerun()
         
         b4 = st.sidebar.button("🗄️ Database Pasien", type="primary" if st.session_state['menu_internal_active'] == 'Database Pasien' else "secondary", use_container_width=True)
-        if b4: st.session_state['menu_internal_active'] = "Database Pasien"
+        if b4: st.session_state['menu_internal_active'] = "Database Pasien"; st.rerun()
         
     else:  # Nakes
         b1 = st.sidebar.button("📊 Dashboard", type="primary" if st.session_state['menu_internal_active'] == 'Dashboard' else "secondary", use_container_width=True)
-        if b1: st.session_state['menu_internal_active'] = "Dashboard"
+        if b1: st.session_state['menu_internal_active'] = "Dashboard"; st.rerun()
         
         b2 = st.sidebar.button("🩺 Layanan Utama", type="primary" if st.session_state['menu_internal_active'] == 'Layanan Utama' else "secondary", use_container_width=True)
-        if b2: st.session_state['menu_internal_active'] = "Layanan Utama"
+        if b2: st.session_state['menu_internal_active'] = "Layanan Utama"; st.rerun()
         
         b3 = st.sidebar.button("📈 Riwayat & Statistik", type="primary" if st.session_state['menu_internal_active'] == 'Riwayat & Statistik' else "secondary", use_container_width=True)
-        if b3: st.session_state['menu_internal_active'] = "Riwayat & Statistik"
+        if b3: st.session_state['menu_internal_active'] = "Riwayat & Statistik"; st.rerun()
 
     menu_pilihan = st.session_state['menu_internal_active']
 
