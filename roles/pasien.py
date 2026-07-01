@@ -6,7 +6,7 @@ import io
 import textwrap 
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
-from modules.database import get_db_connection
+from modules.database import get_db_connection, get_last_patient_record, get_patient_history
 from psycopg2.extras import RealDictCursor
 
 # Konfigurasi wilayah Solo untuk input Alamat
@@ -29,16 +29,7 @@ def show_patient_main_menu():
     nama_user = st.session_state.get('username', '')
     patient_id_session = st.session_state.get('patient_id', '')
     
-    conn = get_db_connection()
-    cursor = conn.cursor(cursor_factory=RealDictCursor)
-    cursor.execute("""
-        SELECT id_rekam, usia, status_pemeriksaan, id_pasien 
-        FROM pasien_tb 
-        WHERE id_pasien = %s OR (nama = %s AND status_pemeriksaan = 'Menunggu Pemeriksaan Fisik')
-        ORDER BY id_rekam DESC LIMIT 1
-    """, (patient_id_session, nama_user))
-    row_terakhir = cursor.fetchone()
-    conn.close()
+    row_terakhir = get_last_patient_record(patient_id_session, nama_user)
     
     pemeriksaan_aktif = False
     id_aktif = patient_id_session
@@ -309,18 +300,7 @@ def show_patient_history():
         st.warning("ID Pasien tidak ditemukan.")
         return
 
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("""
-        SELECT id_rekam, id_pasien, usia, tanggal_pengisian, jadwal_kunjungan, lokasi_faskes, status_pemeriksaan, hasil_risiko, rekomendasi, hb_darah, lila, imt, no_antrean
-        FROM pasien_tb 
-        WHERE id_pasien = %s
-        ORDER BY id_rekam ASC
-    """, (patient_id_active,))
-    rows = cursor.fetchall()
-    col_names = [desc[0] for desc in cursor.description]
-    df_history = pd.DataFrame(rows, columns=col_names) if rows else pd.DataFrame(columns=col_names)
-    conn.close()
+    df_history = get_patient_history(patient_id_active)
     
     st.markdown(f"""<div style='margin-bottom: 2rem; padding-left: 0.5rem;'>
 <span style='background-color: #dcfce7; color: #047857; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.5px;'>✔ PASIEN TERVERIFIKASI</span>
