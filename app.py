@@ -16,8 +16,10 @@ st.set_page_config(
 import urllib.parse
 from modules.database import init_db, generate_new_patient_id, register_new_patient, get_db_connection, register_staff, get_staff_by_username, is_username_exists
 
-# Jalankan inisialisasi database PostgreSQL sebelum memuat komponen UI
-init_db()
+# Jalankan inisialisasi database PostgreSQL hanya sekali saat aplikasi pertama kali dinyalakan
+if 'db_initialized' not in st.session_state:
+    init_db()
+    st.session_state['db_initialized'] = True
 
 # PERHATIAN: Pastikan mengimpor dashboard edukasi dari file yang baru kita buat
 from modules.ui_components import inject_modern_css
@@ -663,45 +665,46 @@ else:
 """, unsafe_allow_html=True)
     
     st.sidebar.markdown("<p style='font-size:0.8rem; font-weight:700; color:#94a3b8; margin-bottom:0.5rem; letter-spacing:0.05em;'>📂 NAVIGASI PANEL</p>", unsafe_allow_html=True)
-
+    
     if 'menu_internal_active' not in st.session_state:
         st.session_state['menu_internal_active'] = "Dashboard"
 
     # 3. NAVIGASI TOMBOL KOTAK BERDASARKAN HIERARKI AKSES
     if role_user == "Pasien":
         b1 = st.sidebar.button("📊 Dashboard", type="primary" if st.session_state['menu_internal_active'] == 'Dashboard' else "secondary", use_container_width=True)
-        if b1: st.session_state['menu_internal_active'] = "Dashboard"; st.rerun()
+        if b1: st.session_state['menu_internal_active'] = "Dashboard"
         
         b2 = st.sidebar.button("📋 Layanan Utama", type="primary" if st.session_state['menu_internal_active'] == 'Layanan Utama' else "secondary", use_container_width=True)
-        if b2: st.session_state['menu_internal_active'] = "Layanan Utama"; st.rerun()
+        if b2: st.session_state['menu_internal_active'] = "Layanan Utama"
         
         b3 = st.sidebar.button("🩺 Riwayat Medis", type="primary" if st.session_state['menu_internal_active'] == 'Riwayat Medis' else "secondary", use_container_width=True)
-        if b3: st.session_state['menu_internal_active'] = "Big Data"; st.session_state['menu_internal_active'] = "Riwayat Medis"; st.rerun()
+        if b3: st.session_state['menu_internal_active'] = "Riwayat Medis"
 
         b4 = st.sidebar.button("👤 Profil Saya", type="primary" if st.session_state['menu_internal_active'] == 'Profil Saya' else "secondary", use_container_width=True)
-        if b4: st.session_state['menu_internal_active'] = "Profil Saya"; st.rerun()
+        if b4: st.session_state['menu_internal_active'] = "Profil Saya"
 
     elif role_user == "Admin":
         b1 = st.sidebar.button("📊 Dashboard", type="primary" if st.session_state['menu_internal_active'] == 'Dashboard' else "secondary", use_container_width=True)
-        if b1: st.session_state['menu_internal_active'] = "Dashboard"; st.rerun()
+        if b1: st.session_state['menu_internal_active'] = "Dashboard"
 
         b2 = st.sidebar.button("📈 Evaluasi Model AI", type="primary" if st.session_state['menu_internal_active'] == 'Evaluasi Model AI' else "secondary", use_container_width=True)
-        if b2: st.session_state['menu_internal_active'] = "Evaluasi Model AI"; st.rerun()
+        if b2: st.session_state['menu_internal_active'] = "Evaluasi Model AI"
         
         b3 = st.sidebar.button("⚙️ Retraining Model AI", type="primary" if st.session_state['menu_internal_active'] == 'Retraining Model AI' else "secondary", use_container_width=True)
-        if b3: st.session_state['menu_internal_active'] = "Retraining Model AI"; st.rerun()
+        if b3: st.session_state['menu_internal_active'] = "Retraining Model AI"
         
         b4 = st.sidebar.button("🗄️ Database Pasien", type="primary" if st.session_state['menu_internal_active'] == 'Database Pasien' else "secondary", use_container_width=True)
-        if b4: st.session_state['menu_internal_active'] = "Database Pasien"; st.rerun()
+        if b4: st.session_state['menu_internal_active'] = "Database Pasien"
         
     else:  # Nakes
         b1 = st.sidebar.button("📊 Dashboard", type="primary" if st.session_state['menu_internal_active'] == 'Dashboard' else "secondary", use_container_width=True)
-        if b1: st.session_state['menu_internal_active'] = "Dashboard"; st.rerun()
+        if b1: st.session_state['menu_internal_active'] = "Dashboard"
         
         b2 = st.sidebar.button("🩺 Layanan Utama", type="primary" if st.session_state['menu_internal_active'] == 'Layanan Utama' else "secondary", use_container_width=True)
-        if b2: st.session_state['menu_internal_active'] = "Layanan Utama"; st.rerun()
+        if b2: st.session_state['menu_internal_active'] = "Layanan Utama"
         
         b3 = st.sidebar.button("📈 Riwayat & Statistik", type="primary" if st.session_state['menu_internal_active'] == 'Riwayat & Statistik' else "secondary", use_container_width=True)
+        if b3: st.session_state['menu_internal_active'] = "Riwayat & Statistik"yat & Statistik' else "secondary", use_container_width=True)
         if b3: st.session_state['menu_internal_active'] = "Riwayat & Statistik"; st.rerun()
 
     menu_pilihan = st.session_state['menu_internal_active']
