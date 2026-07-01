@@ -215,22 +215,23 @@ def show_nakes_main_menu():
                 
                 st.markdown(f"<div style='background: #f8fafc; border: 1px solid #e2e8f0; padding: 1rem; border-radius: 12px; display: flex; gap: 15px; align-items: center; margin-bottom: 1.5rem;'><div style='background: #d1fae5; min-width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;'><span class='material-symbols-outlined' style='color: #047857;'>person</span></div><div><p style='margin: 0; font-weight: 800; color: #0f172a; font-size: 0.95rem;'>Pasien: {data_aktif['nama']} ({data_aktif['usia']} Tahun)</p><p style='margin: 0; font-size: 0.75rem; color: #64748b;'>ID: {data_aktif['id_pasien']} | No. Antrean: {data_aktif['no_antrean']}</p></div></div>", unsafe_allow_html=True)
 
-                c1, c2 = st.columns(2)
-                with c1:
-                    hb = st.number_input("Kadar Hb (g/dL)", min_value=4.0, max_value=20.0, value=None, placeholder="Ketik kadar Hb pasien...", step=0.1)
-                    bb = st.number_input("Berat Badan (kg)", min_value=30.0, max_value=120.0, value=None, placeholder="Ketik berat badan (kg)...", step=0.1)
-                with c2:
-                    lila = st.number_input("Lingkar Lengan (LILA) (cm)", min_value=10.0, max_value=50.0, value=None, placeholder="Ketik ukuran LILA (cm)...", step=0.1)
-                    tb = st.number_input("Tinggi Badan (cm)", min_value=120.0, max_value=200.0, value=None, placeholder="Ketik tinggi badan (cm)...", step=0.1)
-
                 if 'id_rekam_sementara' not in st.session_state or st.session_state['id_rekam_sementara'] != id_rekam_aktif:
                     st.session_state['temp_hasil_ai'] = None
                     st.session_state['id_rekam_sementara'] = id_rekam_aktif
 
-                st.markdown("<div style='height: 0.5rem;'></div>", unsafe_allow_html=True)
+                with st.form("form_pemeriksaan_fisik"):
+                    c1, c2 = st.columns(2)
+                    with c1:
+                        hb = st.number_input("Kadar Hb (g/dL)", min_value=4.0, max_value=20.0, value=None, placeholder="Ketik kadar Hb pasien...", step=0.1)
+                        bb = st.number_input("Berat Badan (kg)", min_value=30.0, max_value=120.0, value=None, placeholder="Ketik berat badan (kg)...", step=0.1)
+                    with c2:
+                        lila = st.number_input("Lingkar Lengan (LILA) (cm)", min_value=10.0, max_value=50.0, value=None, placeholder="Ketik ukuran LILA (cm)...", step=0.1)
+                        tb = st.number_input("Tinggi Badan (cm)", min_value=120.0, max_value=200.0, value=None, placeholder="Ketik tinggi badan (cm)...", step=0.1)
+
+                    st.markdown("<div style='height: 0.5rem;'></div>", unsafe_allow_html=True)
+                    submit_prediksi = st.form_submit_button("PROSES PREDIKSI RISIKO STUNTING (AI) 🧠", use_container_width=True)
                 
-                # --- LOGIKA TOMBOL PREDIKSI DENGAN VALIDASI PENGAMAN ANTI-KOSONG ---
-                if st.button("PROSES PREDIKSI RISIKO STUNTING (AI) 🧠", use_container_width=True):
+                if submit_prediksi:
                     if hb is None or bb is None or lila is None or tb is None:
                         st.error("⚠️ **Gagal Memproses:** Seluruh parameter pemeriksaan fisik (Kadar Hb, Berat Badan, LILA, dan Tinggi Badan) wajib diisi lengkap tanpa ada yang terlewat.")
                     else:
@@ -261,17 +262,16 @@ def show_nakes_main_menu():
                             badge_color = "#047857"
                         
                         rekomendasi_ai_otomatis = generate_ai_recommendation(
-                        imt=imt, 
-                        lila=lila, 
-                        hb=hb, 
-                        prediksi=prediksi,
-                        pendapatan=v_pendapatan,
-                        air=v_air,
-                        faskes=v_faskes,
-                        pendidikan=v_pendidikan,
-                        gizi=v_gizi 
+                            imt=imt, 
+                            lila=lila, 
+                            hb=hb, 
+                            prediksi=prediksi,
+                            pendapatan=v_pendapatan,
+                            air=v_air,
+                            faskes=v_faskes,
+                            pendidikan=v_pendidikan,
+                            gizi=v_gizi 
                         )
-                        
                         
                         st.session_state['temp_hasil_ai'] = {
                             'imt': imt, 'bb': bb, 'tb': tb, 'hb': hb, 'lila': lila,
@@ -305,35 +305,37 @@ def show_nakes_main_menu():
                     
                     # 3. PANEL INPUT RESEP/TINDAKAN OLEH TENAGA KESEHATAN AKTUAL
                     st.markdown("<p style='font-size: 0.85rem; font-weight: 700; color: #1e293b; margin-bottom: 0.2rem;'>✍️ Catatan Tambahan, Resep Obat & Intervensi (Nakes)</p>", unsafe_allow_html=True)
-                    rekomendasi_nakes = st.text_area("Rekomendasi Nakes", placeholder="Ketikkan resep obat faskes (misal: PMT biskuit, Vitamin C, TTD), jadwal kontrol ulang, atau instruksi rujukan di sini...", label_visibility="collapsed")
                     
-                    # 4. PROSES PENYIMPANAN PERMANEN KE DATABASE POSTGRESQL
-                    if st.button("SIMPAN & CETAK REKAM MEDIS", type="primary", use_container_width=True):
-                        if not rekomendasi_nakes.strip():
-                            st.error("⚠️ Gagal Menyimpan! Sebagai Tenaga Kesehatan, Anda wajib menuliskan instruksi medis/resep tambahan pada kolom di atas.")
-                        else:
-                            # Menggabungkan hasil analisis sistem AI dan resep manual dari Nakes ke dalam satu kolom teks database
-                            rekomendasi_gabungan = f"[ANALISIS DINAMIS SISTEM AI]:\n{res['rekomendasi_ai']}\n\n[REKOMENDASI & INTERVENSI NAKES]:\n{rekomendasi_nakes}"
-                            
-                            conn = get_db_connection()
-                            cursor = conn.cursor()
-                            cursor.execute("""
-                            UPDATE pasien_tb SET 
-                                berat_badan = %s, tinggi_badan = %s, hb_darah = %s, imt = %s, lila = %s,
-                                status_pemeriksaan = 'Selesai Diperiksa', hasil_risiko = %s, rekomendasi = %s
-                            WHERE id_rekam = %s
-                            """, (res['bb'], res['tb'], res['hb'], res['imt'], res['lila'], res['hasil_teks'], rekomendasi_gabungan, id_rekam_aktif))
-                            conn.commit()
-                            conn.close()
-                            
-                            try:
-                                st.cache_data.clear()
-                            except Exception:
-                                pass
-                            
-                            st.session_state['temp_hasil_ai'] = None
-                            st.success("🎉 Rekam Medis Berhasil Terkunci di Database! Status Pasien: Selesai Diperiksa.")
-                            st.rerun()
+                    with st.form("form_simpan_rekam_medis"):
+                        rekomendasi_nakes = st.text_area("Rekomendasi Nakes", placeholder="Ketikkan resep obat faskes (misal: PMT biskuit, Vitamin C, TTD), jadwal kontrol ulang, atau instruksi rujukan di sini...", label_visibility="collapsed")
+                        submit_simpan = st.form_submit_button("SIMPAN & CETAK REKAM MEDIS", type="primary", use_container_width=True)
+                        
+                        if submit_simpan:
+                            if not rekomendasi_nakes.strip():
+                                st.error("⚠️ Gagal Menyimpan! Sebagai Tenaga Kesehatan, Anda wajib menuliskan instruksi medis/resep tambahan pada kolom di atas.")
+                            else:
+                                # Menggabungkan hasil analisis sistem AI dan resep manual dari Nakes ke dalam satu kolom teks database
+                                rekomendasi_gabungan = f"[ANALISIS DINAMIS SISTEM AI]:\n{res['rekomendasi_ai']}\n\n[REKOMENDASI & INTERVENSI NAKES]:\n{rekomendasi_nakes}"
+                                
+                                conn = get_db_connection()
+                                cursor = conn.cursor()
+                                cursor.execute("""
+                                UPDATE pasien_tb SET 
+                                    berat_badan = %s, tinggi_badan = %s, hb_darah = %s, imt = %s, lila = %s,
+                                    status_pemeriksaan = 'Selesai Diperiksa', hasil_risiko = %s, rekomendasi = %s
+                                WHERE id_rekam = %s
+                                """, (res['bb'], res['tb'], res['hb'], res['imt'], res['lila'], res['hasil_teks'], rekomendasi_gabungan, id_rekam_aktif))
+                                conn.commit()
+                                conn.close()
+                                
+                                try:
+                                    st.cache_data.clear()
+                                except Exception:
+                                    pass
+                                
+                                st.session_state['temp_hasil_ai'] = None
+                                st.success("🎉 Rekam Medis Berhasil Terkunci di Database! Status Pasien: Selesai Diperiksa.")
+                                st.rerun()
                             
                             
 def show_nakes_history_dashboard():
