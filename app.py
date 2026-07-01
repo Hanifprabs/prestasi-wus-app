@@ -704,8 +704,7 @@ else:
         if b2: st.session_state['menu_internal_active'] = "Layanan Utama"
         
         b3 = st.sidebar.button("📈 Riwayat & Statistik", type="primary" if st.session_state['menu_internal_active'] == 'Riwayat & Statistik' else "secondary", use_container_width=True)
-        if b3: st.session_state['menu_internal_active'] = "Riwayat & Statistik"yat & Statistik' else "secondary", use_container_width=True)
-        if b3: st.session_state['menu_internal_active'] = "Riwayat & Statistik"; st.rerun()
+        if b3: st.session_state['menu_internal_active'] = "Riwayat & Statistik"
 
     menu_pilihan = st.session_state['menu_internal_active']
 
