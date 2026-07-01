@@ -309,3 +309,38 @@ def is_username_exists(username):
     cursor.close()
     conn.close()
     return result is not None
+
+
+@st.cache_data(ttl=30)
+def get_last_patient_record(patient_id, username):
+    """Mengambil 1 record terakhir dari pasien berdasarkan ID atau nama (di-cache 30 detik)"""
+    conn = get_db_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    cursor.execute("""
+        SELECT id_rekam, usia, status_pemeriksaan, id_pasien 
+        FROM pasien_tb 
+        WHERE id_pasien = %s OR (nama = %s AND status_pemeriksaan = 'Menunggu Pemeriksaan Fisik')
+        ORDER BY id_rekam DESC LIMIT 1
+    """, (patient_id, username))
+    row = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    return dict(row) if row else None
+
+
+@st.cache_data(ttl=30)
+def get_patient_history(patient_id):
+    """Mengambil seluruh riwayat medis pasien berdasarkan ID (di-cache 30 detik)"""
+    conn = get_db_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    cursor.execute("""
+        SELECT id_rekam, id_pasien, usia, tanggal_pengisian, jadwal_kunjungan, lokasi_faskes, status_pemeriksaan, hasil_risiko, rekomendasi, hb_darah, lila, imt, no_antrean
+        FROM pasien_tb 
+        WHERE id_pasien = %s
+        ORDER BY id_rekam ASC
+    """, (patient_id,))
+    rows = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return pd.DataFrame(rows) if rows else pd.DataFrame()
+
