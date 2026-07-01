@@ -64,7 +64,6 @@ if "action" in st.query_params:
     if st.query_params["action"] == "login":
         st.session_state['tampilkan_login'] = True
         del st.query_params["action"]  # Bersihkan parameter action saja, jangan .clear() semua agar token tidak hilang
-        st.rerun()  # Paksa muat ulang halaman
 
 
 # ==========================================
@@ -259,16 +258,7 @@ def render_login():
                                 st.session_state['temp_otp'] = None
                                 st.session_state['temp_user'] = None
                                 
-                                st.session_state['patient_id'] = p_id
-                                login_user(p_nama, "Pasien")
-                                
-                                # --- PENYIMPANAN TOKEN DI URL AGAR ANTI LOGOUT SAAT REFRESH ---
-                                st.query_params["session_role"] = "Pasien"
-                                st.query_params["session_user"] = p_nama
-                                st.query_params["session_pid"] = p_id
-                                # --------------------------------------------------------------
-                                
-                                st.rerun()
+                                login_user(p_nama, "Pasien", patient_id=p_id)
                             else:
                                 st.error("Kode OTP salah. Silakan periksa kembali email Anda.")
                                 
@@ -405,9 +395,6 @@ def render_login():
                                 st.session_state['temp_nakes_otp'] = None
                                 st.session_state['temp_nakes_user'] = None
                                 login_user(uname, "Tenaga Kesehatan")
-                                st.query_params["session_role"] = "Tenaga Kesehatan"
-                                st.query_params["session_user"] = uname
-                                st.rerun()
                             else:
                                 st.error("Kode OTP salah. Silakan periksa kembali email Anda.")
 
@@ -516,9 +503,6 @@ def render_login():
                                 st.session_state['temp_admin_otp'] = None
                                 st.session_state['temp_admin_user'] = None
                                 login_user(uname, "Admin")
-                                st.query_params["session_role"] = "Admin"
-                                st.query_params["session_user"] = uname
-                                st.rerun()
                             else:
                                 st.error("Kode OTP salah. Silakan periksa kembali email Anda.")
 
@@ -715,26 +699,12 @@ else:
         st.sidebar.info("Hubungi Pusat Layanan Khusus WA: 08123456789")
 
     if st.sidebar.button("🚪 Keluar", use_container_width=True):
-        # 🌟 PERBAIKAN: Bersihkan URL Token agar benar-benar Logout (Lupa Ingatan) saat refresh
-        st.query_params.clear()
-        
         st.session_state['tampilkan_login'] = True 
-        st.session_state['login_otp_step'] = "input_credentials" 
-        st.session_state['temp_otp'] = None
-        st.session_state['temp_user'] = None
         st.session_state['radio_index'] = 0
         st.session_state['login_role_active'] = "Pasien"
         st.session_state['menu_internal_active'] = "Dashboard"
-        # Reset OTP state Nakes & Admin
-        st.session_state['nakes_otp_step'] = "input_credentials"
-        st.session_state['temp_nakes_otp'] = None
-        st.session_state['temp_nakes_user'] = None
-        st.session_state['admin_otp_step'] = "input_credentials"
-        st.session_state['temp_admin_otp'] = None
-        st.session_state['temp_admin_user'] = None
         
         logout_user()
-        st.rerun()
         
     # ==========================================
     # 6. INTEGRASI ARSITEKTUR ROUTING PANEL TENGAH
