@@ -3,6 +3,7 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 import os
 import datetime
+import streamlit as st
 
 # --- KONFIGURASI KONEKSI DATABASE (LOCAL FALLBACK) ---
 # Digunakan saat menjalankan aplikasi di laptop secara lokal.
@@ -134,6 +135,11 @@ def register_new_patient(nama, email, no_hp, kecamatan, nik=""):
     cursor.close()
     conn.close()
     
+    try:
+        st.cache_data.clear()
+    except Exception:
+        pass
+        
     return id_baru
 
 # --- FUNGSI UNTUK PASIEN LAMA ---
@@ -156,6 +162,11 @@ def insert_patient_kuesioner(data_dict):
     conn.commit()
     cursor.close()
     conn.close()
+    
+    try:
+        st.cache_data.clear()
+    except Exception:
+        pass
 
 def get_patient_by_name(nama_pasien):
     """Mengambil riwayat medis pasien berdasarkan nama (untuk login pasien)"""
@@ -170,8 +181,9 @@ def get_patient_by_name(nama_pasien):
     return pd.DataFrame(rows) if rows else pd.DataFrame()
 
 # --- FUNGSI UNTUK NAKES & ADMIN ---
+@st.cache_data(ttl=30)
 def get_all_patients():
-    """Mengambil seluruh data pasien untuk ditampilkan di Dashboard Nakes/Admin"""
+    """Mengambil seluruh data pasien untuk ditampilkan di Dashboard Nakes/Admin (Di-cache selama 30 detik)"""
     conn = get_db_connection()
     cursor = conn.cursor(cursor_factory=RealDictCursor)
     
@@ -199,6 +211,11 @@ def update_patient_medical(id_pasien, medical_dict):
     conn.commit()  
     cursor.close()
     conn.close()   
+    
+    try:
+        st.cache_data.clear()
+    except Exception:
+        pass
 
 def is_id_pasien_exists(id_pasien):
     """Mengecek apakah ID Pasien sudah terdaftar di database"""
@@ -252,6 +269,10 @@ def register_staff(username, email, no_hp, role):
             (username, email, no_hp, role)
         )
         conn.commit()
+        try:
+            st.cache_data.clear()
+        except Exception:
+            pass
         return True
     except Exception:
         conn.rollback()
