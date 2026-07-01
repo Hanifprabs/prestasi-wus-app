@@ -4,23 +4,44 @@ from psycopg2.extras import RealDictCursor
 import os
 import datetime
 
-# --- KONFIGURASI KONEKSI DATABASE POSTGRESQL ---
-DB_HOST = "localhost"
-DB_PORT = "5432"
-DB_NAME = "db_stunting_wus"
-DB_USER = "postgres"
-DB_PASSWORD = "postgres" # ⚠️ GANTI dengan password pgAdmin Anda
+# --- KONFIGURASI KONEKSI DATABASE (LOCAL FALLBACK) ---
+# Digunakan saat menjalankan aplikasi di laptop secara lokal.
+# Saat di-deploy ke Streamlit Cloud, koneksi otomatis menggunakan st.secrets.
+DB_HOST     = "localhost"
+DB_PORT     = "5432"
+DB_NAME     = "db_stunting_wus"
+DB_USER     = "postgres"
+DB_PASSWORD = "postgres"
 
 def get_db_connection():
-    """Membuka koneksi ke server database PostgreSQL"""
-    conn = psycopg2.connect(
-        host=DB_HOST,
-        port=DB_PORT,
-        database=DB_NAME,
-        user=DB_USER,
-        password=DB_PASSWORD
-    )
+    """
+    Membuka koneksi ke database PostgreSQL.
+    - Jika berjalan di Streamlit Cloud: membaca dari st.secrets [postgres]
+    - Jika berjalan lokal: menggunakan konfigurasi hardcoded di atas
+    """
+    try:
+        # pyrefly: ignore [missing-import]
+        import streamlit as st
+        cfg = st.secrets["postgres"]
+        conn = psycopg2.connect(
+            host=cfg["host"],
+            port=cfg["port"],
+            database=cfg["database"],
+            user=cfg["user"],
+            password=cfg["password"],
+            sslmode="require"          # Neon & sebagian besar cloud PG butuh SSL
+        )
+    except (KeyError, FileNotFoundError, Exception):
+        # Fallback ke koneksi lokal jika st.secrets tidak tersedia
+        conn = psycopg2.connect(
+            host=DB_HOST,
+            port=DB_PORT,
+            database=DB_NAME,
+            user=DB_USER,
+            password=DB_PASSWORD
+        )
     return conn
+
 
 def init_db():
     """Membuat tabel database jika belum ada dan memperbarui (ALTER) jika ada kolom baru"""
@@ -266,4 +287,4 @@ def is_username_exists(username):
     result = cursor.fetchone()
     cursor.close()
     conn.close()
-    return result is not None
+    return result is not None
