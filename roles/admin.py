@@ -11,6 +11,8 @@ from modules.model_ai import train_model
 from modules.database import get_all_patients, get_db_connection
 from modules.auth import KODE_REGISTRASI_NAKES, KODE_REGISTRASI_ADMIN
 
+FEATURE_COLUMNS = ['Usia', 'Berat_Badan', 'Tinggi_Badan', 'Hb_Darah', 'IMT', 'LILA', 'Pendapatan_Bulanan', 'Akses_Air_Bersih', 'Akses_Layanan_Kesehatan', 'Pendidikan_Terakhir', 'Skor_Pengetahuan_Gizi']
+
 # ==========================================
 # CSS GLOBAL UNTUK ADMIN
 # ==========================================
@@ -236,8 +238,6 @@ def get_evaluation_results(df):
     Di-cache menggunakan st.cache_data agar tidak melatih ulang model pada setiap interaksi UI.
     """
     df_clean = df.dropna(subset=['Target_Risiko'])
-    FEATURE_COLUMNS = ['Usia', 'Berat_Badan', 'Tinggi_Badan', 'Hb_Darah', 'IMT', 'LILA', 'Pendapatan_Bulanan', 'Akses_Air_Bersih', 'Akses_Layanan_Kesehatan', 'Pendidikan_Terakhir', 'Skor_Pengetahuan_Gizi']
-    
     X = df_clean[FEATURE_COLUMNS]
     y_true = df_clean['Target_Risiko'].astype(int)
 
