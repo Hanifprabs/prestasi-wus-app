@@ -134,14 +134,13 @@ ID Pasien Anda: <strong style='color:#0f172a;'>{id_aktif}</strong>
 </p>
 </div>""", unsafe_allow_html=True)
         
-        with st.container(border=True):
+        with st.form("form_kuesioner_pasien"):
             st.markdown("<div class='main-form-wrapper'></div>", unsafe_allow_html=True)
             
             st.markdown("<p style='font-size: 1.1rem; font-weight: 600; color: #1e293b; margin-bottom: 0.5rem;'>A. Identitas Dasar & Demografi</p>", unsafe_allow_html=True)
             col_id1, col_id2 = st.columns(2)
         
             with col_id1: 
-            # Mengubah value menjadi None dan menambah placeholder
                 usia = st.number_input("Usia Anda saat ini (Tahun)", min_value=15, max_value=49, value=None, placeholder="Ketik usia di sini...", step=1)
             
             with col_id2: 
@@ -189,25 +188,16 @@ ID Pasien Anda: <strong style='color:#0f172a;'>{id_aktif}</strong>
             with col_jadwal2:
                 besok = datetime.date.today() + datetime.timedelta(days=1)
                 tanggal_kunjungan = st.date_input("Tanggal Cek Fisik", min_value=besok, value=besok)
-                hari_kunjungan = tanggal_kunjungan.weekday()
             
             with col_jadwal3: 
-                pilihan_sesi = []
-                if hari_kunjungan == 6:
-                    st.error("Puskesmas tutup.")
-                elif hari_kunjungan in [0, 1, 2, 3]:
-                    pilihan_sesi = ["Sesi 1 (07.30 - 09.00)", "Sesi 2 (09.00 - 10.00)", "Sesi 3 (10.00 - 11.00)", "Sesi 4 (11.00 - 12.00)"]
-                elif hari_kunjungan == 4:
-                    pilihan_sesi = ["Sesi 1 (07.30 - 09.00)", "Sesi 2 (09.00 - 10.00)"]
-                elif hari_kunjungan == 5:
-                    pilihan_sesi = ["Sesi 1 (07.30 - 09.00)", "Sesi 2 (09.00 - 10.00)", "Sesi 3 (10.00 - 11.00)"]
-                
-                sesi_kedatangan = st.selectbox("Pilih Sesi", pilihan_sesi, index=None, placeholder="Pilih Sesi..." if pilihan_sesi else "Tutup")
+                pilihan_sesi = ["Sesi 1 (07.30 - 09.00)", "Sesi 2 (09.00 - 10.00)", "Sesi 3 (10.00 - 11.00)", "Sesi 4 (11.00 - 12.00)"]
+                sesi_kedatangan = st.selectbox("Pilih Sesi", pilihan_sesi, index=None, placeholder="Pilih Sesi...")
 
             st.markdown("<div style='height: 1.5rem;'></div>", unsafe_allow_html=True)
-            submit_btn = st.button("SIMPAN & AJUKAN DATA KUESIONER", type="primary", use_container_width=True)
+            submit_btn = st.form_submit_button("SIMPAN & AJUKAN DATA KUESIONER", type="primary", use_container_width=True)
             
             if submit_btn:
+                hari_kunjungan = tanggal_kunjungan.weekday()
                 # 1. Pengecekan Usia Kosong (Prioritas Utama)
                 if usia is None:
                     st.error("⚠️ Gagal Menyimpan! Kolom 'Usia Anda saat ini' wajib diisi. Silakan ketik angka usia Anda di bagian Identitas Dasar.")
@@ -216,9 +206,15 @@ ID Pasien Anda: <strong style='color:#0f172a;'>{id_aktif}</strong>
                 elif pend_opt is None or pendapatan_opt is None or air_opt is None or faskes_opt is None or lokasi_puskesmas is None or sesi_kedatangan is None or None in [q1, q2, q3, q4, q5]:
                     st.warning("⚠️ Mohon lengkapi seluruh isian data kuesioner dan pastikan Anda telah memilih sesi Puskesmas tanpa ada yang terlewat.")
                 
-                # 3. Pengecekan Hari Libur
+                # 3. Pengecekan Hari Libur dan Sesi Berdasarkan Hari Kunjungan
                 elif hari_kunjungan == 6:
                     st.error("❌ Puskesmas tutup pada hari Minggu. Silakan pilih tanggal kunjungan yang lain.")
+                
+                elif hari_kunjungan == 4 and sesi_kedatangan in ["Sesi 3 (10.00 - 11.00)", "Sesi 4 (11.00 - 12.00)"]:
+                    st.error("❌ Hari Jumat hanya melayani Sesi 1 dan Sesi 2 (hingga pukul 10:00 WIB). Silakan pilih sesi yang sesuai.")
+                
+                elif hari_kunjungan == 5 and sesi_kedatangan == "Sesi 4 (11.00 - 12.00)":
+                    st.error("❌ Hari Sabtu hanya melayani Sesi 1, 2, dan 3 (hingga pukul 11:00 WIB). Silakan pilih sesi yang sesuai.")
                 
                 # Jika semua lolos validasi, proses pendaftaran
                 else:
