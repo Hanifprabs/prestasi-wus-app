@@ -282,6 +282,7 @@ def show_admin_evaluation_menu():
         st.warning("Model AI belum dilatih atau dataset kosong. Silakan jalankan Retraining di menu Manajemen Model AI terlebih dahulu.")
         return
 
+    df = st.session_state['training_data'].dropna(subset=['Target_Risiko'])
     try:
         acc, prec, rec, f1, cm, importances = get_evaluation_results(st.session_state['training_data'])
         st.session_state['last_acc'] = acc
