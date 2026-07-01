@@ -326,6 +326,11 @@ def show_nakes_main_menu():
                             conn.commit()
                             conn.close()
                             
+                            try:
+                                st.cache_data.clear()
+                            except Exception:
+                                pass
+                            
                             st.session_state['temp_hasil_ai'] = None
                             st.success("🎉 Rekam Medis Berhasil Terkunci di Database! Status Pasien: Selesai Diperiksa.")
                             st.rerun()

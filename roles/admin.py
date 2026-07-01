@@ -229,6 +229,42 @@ def show_admin_model_menu():
                 # 5. Peringatkan admin untuk melatih ulang
                 st.success("✅ Sampel data berhasil disuntikkan dan disimpan ke hardisk! Silakan klik 'Latih Ulang Model' di atas agar AI mempelajari data baru ini.")
 
+@st.cache_data
+def get_evaluation_results(df):
+    """
+    Menghitung metrik performa model AI dan confusion matrix.
+    Di-cache menggunakan st.cache_data agar tidak melatih ulang model pada setiap interaksi UI.
+    """
+    df_clean = df.dropna(subset=['Target_Risiko'])
+    FEATURE_COLUMNS = ['Usia', 'Berat_Badan', 'Tinggi_Badan', 'Hb_Darah', 'IMT', 'LILA', 'Pendapatan_Bulanan', 'Akses_Air_Bersih', 'Akses_Layanan_Kesehatan', 'Pendidikan_Terakhir', 'Skor_Pengetahuan_Gizi']
+    
+    X = df_clean[FEATURE_COLUMNS]
+    y_true = df_clean['Target_Risiko'].astype(int)
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y_true, test_size=0.25, random_state=42)
+    
+    try:
+        from imblearn.over_sampling import SMOTE
+        smote_eval = SMOTE(random_state=42, k_neighbors=2)
+        X_tr_res, y_tr_res = smote_eval.fit_resample(X_train, y_train)
+    except Exception:
+        X_tr_res, y_tr_res = X_train, y_train
+
+    eval_model = RandomForestClassifier(n_estimators=100, random_state=42)
+    eval_model.fit(X_tr_res, y_tr_res)
+    y_pred = eval_model.predict(X_test)
+
+    acc = eval_model.score(X_test, y_test) * 100
+    prec = precision_score(y_test, y_pred, average='macro', zero_division=0) * 100
+    rec = recall_score(y_test, y_pred, average='macro', zero_division=0) * 100
+    f1 = f1_score(y_test, y_pred, average='macro', zero_division=0) * 100
+    
+    cm = confusion_matrix(y_test, y_pred, labels=[0, 1, 2])
+    importances = eval_model.feature_importances_
+    
+    return acc, prec, rec, f1, cm, importances
+
+
 # ==========================================
 # HALAMAN 2: EVALUASI MODEL AI (DASHBOARD MULTICLASS LENGKAP)
 # ==========================================
@@ -246,36 +282,9 @@ def show_admin_evaluation_menu():
         st.warning("Model AI belum dilatih atau dataset kosong. Silakan jalankan Retraining di menu Manajemen Model AI terlebih dahulu.")
         return
 
-    df = st.session_state['training_data'].dropna(subset=['Target_Risiko'])
-    FEATURE_COLUMNS = ['Usia', 'Berat_Badan', 'Tinggi_Badan', 'Hb_Darah', 'IMT', 'LILA', 'Pendapatan_Bulanan', 'Akses_Air_Bersih', 'Akses_Layanan_Kesehatan', 'Pendidikan_Terakhir', 'Skor_Pengetahuan_Gizi']
-    
-    X = df[FEATURE_COLUMNS]
-    y_true = df['Target_Risiko'].astype(int)
-
     try:
-        X_train, X_test, y_train, y_test = train_test_split(X, y_true, test_size=0.25, random_state=42)
-        
-        # Simulasi evaluasi menggunakan SMOTE internal agar hasil seimbang secara akademis
-        try:
-            smote_eval = SMOTE(random_state=42, k_neighbors=2)
-            X_tr_res, y_tr_res = smote_eval.fit_resample(X_train, y_train)
-        except:
-            X_tr_res, y_tr_res = X_train, y_train
-
-        eval_model = RandomForestClassifier(n_estimators=100, random_state=42)
-        eval_model.fit(X_tr_res, y_tr_res)
-        y_pred = eval_model.predict(X_test)
-
-        # RUMUS MATEMATIS MULTICLASS (MACRO AVERAGE) YANG VALID UNTUK 3 LABEL
-        acc = eval_model.score(X_test, y_test) * 100
-        prec = precision_score(y_test, y_pred, average='macro', zero_division=0) * 100
-        rec = recall_score(y_test, y_pred, average='macro', zero_division=0) * 100
-        f1 = f1_score(y_test, y_pred, average='macro', zero_division=0) * 100
-        
+        acc, prec, rec, f1, cm, importances = get_evaluation_results(st.session_state['training_data'])
         st.session_state['last_acc'] = acc
-        cm = confusion_matrix(y_test, y_pred, labels=[0, 1, 2])
-        importances = eval_model.feature_importances_
-        
     except Exception as e:
         st.error(f"Gagal melakukan matriks evaluasi: {e}")
         return
@@ -751,7 +760,7 @@ def show_admin_database_menu():
                             cursor = conn.cursor()
                             
                             try:
-                                cursor.execute("DELETE FROM pemeriksaan_tb WHERE id_pasien = ?", (real_id,))
+                                cursor.execute("DELETE FROM pemeriksaan_tb WHERE id_pasien = %s", (real_id,))
                             except:
                                 pass
                                 
@@ -760,11 +769,17 @@ def show_admin_database_menu():
                                 SET status_pemeriksaan = 'Menunggu Pemeriksaan', 
                                     tinggi_badan = NULL, berat_badan = NULL, 
                                     hb_darah = NULL, lila = NULL, hasil_risiko = NULL 
-                                WHERE id_pasien = ?
+                                WHERE id_pasien = %s
                             """, (real_id,))
                             
                             conn.commit()
                             conn.close()
+                            
+                            try:
+                                st.cache_data.clear()
+                            except Exception:
+                                pass
+                                
                             st.success(f"Log {id_log_del} (Pasien: {real_id}) berhasil dihapus dari sistem.")
                             st.rerun()
                         except Exception as e:
@@ -805,9 +820,15 @@ def show_admin_database_menu():
                     try:
                         conn = get_db_connection()
                         cursor = conn.cursor()
-                        cursor.execute("DELETE FROM pasien_tb WHERE id_pasien = ?", (id_hapus,))
+                        cursor.execute("DELETE FROM pasien_tb WHERE id_pasien = %s", (id_hapus,))
                         conn.commit()
                         conn.close()
+                        
+                        try:
+                            st.cache_data.clear()
+                        except Exception:
+                            pass
+                            
                         st.success(f"Sukses menghapus data dengan ID `{id_hapus}`.")
                         st.rerun()
                     except Exception as e:

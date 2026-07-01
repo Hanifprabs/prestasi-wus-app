@@ -113,6 +113,11 @@ def show_patient_main_menu():
                 conn.commit()
                 conn.close()
                 
+                try:
+                    st.cache_data.clear()
+                except Exception:
+                    pass
+                
                 if 'tiket_antrean' in st.session_state:
                     del st.session_state['tiket_antrean']
                 
@@ -263,6 +268,11 @@ ID Pasien Anda: <strong style='color:#0f172a;'>{id_aktif}</strong>
                         
                         conn.commit()
                         conn.close()
+
+                        try:
+                            st.cache_data.clear()
+                        except Exception:
+                            pass
 
                         st.session_state['tiket_antrean'] = {'faskes': lokasi_puskesmas, 'jadwal': jadwal_lengkap, 'no': no_antrean_terstruktur}
                         st.rerun()
