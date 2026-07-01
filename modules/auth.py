@@ -40,6 +40,7 @@ def init_auth_session():
 def login_user(username, role, patient_id=""):
     """
     Menyimpan data pengguna yang berhasil login ke dalam session state
+    dan menyimpan token di URL agar anti-logout saat refresh.
     """
     st.session_state['logged_in'] = True
     st.session_state['role'] = role
@@ -48,6 +49,12 @@ def login_user(username, role, patient_id=""):
     # KUNCI UTAMA: Simpan ID Pasien ke session state jika masuk sebagai role Pasien
     if role == "Pasien" and patient_id != "":
         st.session_state['patient_id'] = patient_id
+
+    # Simpan token di URL agar anti-logout saat refresh
+    st.query_params["session_role"] = role
+    st.query_params["session_user"] = username
+    if role == "Pasien" and patient_id != "":
+        st.query_params["session_pid"] = patient_id
 
     st.rerun()
 
@@ -68,6 +75,7 @@ def logout_user():
     st.session_state['admin_otp_step'] = "input_credentials"
     st.session_state['temp_admin_otp'] = None
     st.session_state['temp_admin_user'] = None
+    st.query_params.clear()
     st.rerun()
 
 
