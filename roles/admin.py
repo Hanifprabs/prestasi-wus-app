@@ -262,7 +262,11 @@ def get_evaluation_results(df):
     cm = confusion_matrix(y_test, y_pred, labels=[0, 1, 2])
     importances = eval_model.feature_importances_
     
-    return acc, prec, rec, f1, cm, importances
+    len_train = len(X_train)
+    len_res = len(X_tr_res)
+    len_test = len(X_test)
+    
+    return acc, prec, rec, f1, cm, importances, len_train, len_res, len_test
 
 
 # ==========================================
@@ -284,7 +288,7 @@ def show_admin_evaluation_menu():
 
     df = st.session_state['training_data'].dropna(subset=['Target_Risiko'])
     try:
-        acc, prec, rec, f1, cm, importances = get_evaluation_results(st.session_state['training_data'])
+        acc, prec, rec, f1, cm, importances, len_train, len_res, len_test = get_evaluation_results(st.session_state['training_data'])
         st.session_state['last_acc'] = acc
     except Exception as e:
         st.error(f"Gagal melakukan matriks evaluasi: {e}")
@@ -422,15 +426,15 @@ def show_admin_evaluation_menu():
                 </div>
                 <div style="display:flex; justify-content:space-between; align-items:center; background:#f0fdf4; padding:10px 15px; border-radius:8px; border:1px solid #bbf7d0;">
                     <span style="font-size:0.85rem; font-weight:600; color:#166534;">Data Latih Asli (75%)</span>
-                    <span style="font-size:1rem; font-weight:800; color:#15803d;">{len(X_train)}</span>
+                    <span style="font-size:1rem; font-weight:800; color:#15803d;">{len_train}</span>
                 </div>
                 <div style="display:flex; justify-content:space-between; align-items:center; background:#fff7ed; padding:10px 15px; border-radius:8px; border:1px solid #fef08a;">
                     <span style="font-size:0.85rem; font-weight:600; color:#9a3412;">Data Latih + SMOTE</span>
-                    <span style="font-size:1rem; font-weight:800; color:#b45309;">{len(X_tr_res)} <span style="font-size:0.7rem; font-weight:600;">(Seimbang)</span></span>
+                    <span style="font-size:1rem; font-weight:800; color:#b45309;">{len_res} <span style="font-size:0.7rem; font-weight:600;">(Seimbang)</span></span>
                 </div>
                 <div style="display:flex; justify-content:space-between; align-items:center; background:#eff6ff; padding:10px 15px; border-radius:8px; border:1px solid #bfdbfe;">
                     <span style="font-size:0.85rem; font-weight:600; color:#1e40af;">Data Uji / Test (25%)</span>
-                    <span style="font-size:1rem; font-weight:800; color:#1d4ed8;">{len(X_test)}</span>
+                    <span style="font-size:1rem; font-weight:800; color:#1d4ed8;">{len_test}</span>
                 </div>
             </div>
             """
